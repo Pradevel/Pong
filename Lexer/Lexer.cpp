@@ -3,6 +3,7 @@
 //
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "Lexer.h"
 #include "Token/Token.h"
 
@@ -18,59 +19,131 @@ bool isLetter(char c) {
 
 
 std::vector<LexToken> lex(std::string input) {
-    long int currPosition = 0;
+    int currPosition = 0;
+    int debugPosition = 0;
     std::vector<LexToken> tokens;
-
+    int lineNum = 1;
     while(currPosition < input.length()) {
         char c = input.at(currPosition);
 
-        if (isLetter(c)) {
+        if (c == '"') {
             std::string text(1, c);
-            currPosition = currPosition + 1;
-
-            while (currPosition < input.length() && isLetter(input.at(currPosition))) {
+            currPosition++;
+            debugPosition++;
+            int loopTime = 0;
+            while (currPosition < input.length() && (input.at(currPosition) != '"')) {
                 text += input.at(currPosition);
-                currPosition = currPosition + 1;
+                currPosition++;
+                loopTime++;
+                debugPosition++;
             }
 
-
-            tokens.emplace_back(text, text.length(), currPosition, Str);
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition - loopTime), Str);
 
         } else if (std::isdigit(c)) {
             std::string text(1, c);
-            currPosition = currPosition + 1;
-            while (currPosition < input.length() && isLetter(input.at(currPosition))) {
+            currPosition++;
+            debugPosition++;
+            int loopTime = 0;
+
+            while (currPosition < input.length() && std::isdigit(input.at(currPosition))) {
                 text += input.at(currPosition);
-                currPosition = currPosition + 1;
+                currPosition++;
+                debugPosition++;
+                loopTime++;
             }
-            tokens.emplace_back(text, text.length(), currPosition, Num);
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition - loopTime), Num);
 
         } else if (c == '*') {
             std::string text(1, c);
-            currPosition = currPosition + 1;
-            tokens.emplace_back(text, text.length(), currPosition, Mul);
+            currPosition++;
+            debugPosition++;
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition), Mul);
         } else if (c == '/') {
             std::string text(1, c);
-            currPosition = currPosition + 1;
-            tokens.emplace_back(text, text.length(), currPosition, Div);
+            currPosition++;
+            debugPosition++;
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition), Div);
         } else if (c == '+') {
             std::string text(1, c);
-            currPosition = currPosition + 1;
-            tokens.emplace_back(text, text.length(), currPosition, Add);
+            currPosition++;
+            debugPosition++;
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition), Add);
         } else if (c == '-') {
             std::string text(1, c);
-            currPosition = currPosition + 1;
-            tokens.emplace_back(text, text.length(), currPosition, Sub);
+            currPosition++;
+            debugPosition++;
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition), Sub);
         } else if (c == '=') {
             std::string text(1, c);
-            currPosition = currPosition + 1;
-            tokens.emplace_back(text, text.length(), currPosition, Equ);
+            currPosition++;
+            debugPosition++;
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition), Equ);
+        } else if (c == '\n') {
+            std::string text = "NL";
+            currPosition++;
+            debugPosition++;
+            lineNum++;
+            debugPosition = 1;
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition), Ent);
+        } else if (isLetter(c)) {
+            std::string text(1, c);
+            currPosition++;
+            debugPosition++;
+            int loopTime = 0;
+
+            while (currPosition < input.length() && (input.at(currPosition) != ' ')) {
+                text += input.at(currPosition);
+                currPosition++;
+                loopTime++;
+                debugPosition++;
+            }
+
+            tokens.emplace_back(text, text.length(), std::to_string(lineNum) + ":" + std::to_string(debugPosition - loopTime), Ref);
         } else {
-            currPosition = currPosition + 1;
-            std::cout << "Err\n";
+
+            if(c != ' ') {
+                std::string text(1, c);
+                currPosition++;
+                int loopTime = 0;
+                debugPosition++;
+                while (currPosition < input.length() && (input.at(currPosition)) != ' ') {
+                    text += input.at(currPosition);
+                    currPosition++;
+                    loopTime++;
+                    debugPosition++;
+                }
+                std::cout << std::string("SystaxError: Unknown Instruction - '") + text + std::string("'") + "\n\t at LineL:  " + std::to_string(lineNum) + ":" + std::to_string(debugPosition - loopTime) + "\n";
+
+            }
+            currPosition++;
+            debugPosition++;
         }
 
     }
-    tokens.emplace_back("EOF", 3, currPosition + 1, EOFo);
+    tokens.emplace_back("EOF", 3, std::to_string(lineNum) + ":" + std::to_string(debugPosition), EOFo);
+    tokens.erase(
+            std::remove_if(
+                    tokens.begin(),
+                    tokens.end(),
+                    [](LexToken const & p) { return p.data == "\""; }
+            ),
+            tokens.end()
+    );
+    for (int i = 0; i < tokens.size(); i++) {
+        if((tokens[i].type == Ref and tokens[i + 1].type == Equ) or (tokens[i].type == Ref and tokens[i + 1].type == Mul) or (tokens[i].type == Ref and tokens[i + 1].type == Add) or (tokens[i].type == Ref and tokens[i + 1].type == Sub) or (tokens[i].type == Ref and tokens[i + 1].type == Div)) {
+            tokens[i].type = Var;
+        }
+
+        if(tokens[i].data == "true" or tokens[i].data == "false") {
+            tokens[i].type = Bol;
+        }
+
+        if(tokens[i].type == Str) {
+            tokens[i].data = tokens[i].data.substr(1, tokens[i].data.length());
+        }
+
+
+    }
     return tokens;
 }

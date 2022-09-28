@@ -7,11 +7,11 @@
 
 
 std::string tokenToString(const LexToken& token) {
-    return("Token{" + token.data + ", " + std::to_string(token.size) + ", " + std::to_string((token.type)) + ", " + std::to_string(token.pos) + "}\n");
+    return("Token{" + token.data + ", " + std::to_string(token.size) + ", " + std::to_string((token.type)) + ", " + (token.pos) + "}\n");
 }
 
 
-LexToken::LexToken(std::string data, int size, int pos, TokenType type) {
+LexToken::LexToken(std::string data, int size, std::string pos, TokenType type) {
     this->data = data;
     this->size = size;
     this->type = type;

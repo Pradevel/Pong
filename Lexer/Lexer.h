@@ -8,8 +8,6 @@
 #include <vector>
 #include "Token/Token.h"
 
-
-
 std::vector<LexToken> lex(std::string input);
 
 #endif //PONG_LEXER_H

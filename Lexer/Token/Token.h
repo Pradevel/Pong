@@ -15,16 +15,19 @@ enum TokenType {
     Equ = 6,
     Sub = 7,
     Div = 8,
-    EOFo= 9
+    EOFo= 9,
+    Ent=10,
+    Var = 11,
+    Ref = 12,
 };
 
 struct LexToken
 {
-    LexToken(std::string data, int size, int pos, TokenType type);
+    LexToken(std::string data, int size, std::string pos, TokenType type);
 
     std::string data;
     int size;
-    int pos;
+    std::string pos;
     TokenType type;
 
 
