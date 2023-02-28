@@ -142,6 +142,11 @@ std::vector<LexToken> lex(std::string input) {
         if(tokens[i].type == Str) {
             tokens[i].data = tokens[i].data.substr(1, tokens[i].data.length());
         }
+        if(tokens[i].data.find("(") != std::string::npos) {
+            tokens[i].data = "[" + tokens[i].data.substr(0, tokens[i].data.find("(")) + ", " + tokens[i].data.substr(tokens[i].data.find("("), tokens[i].data.length()) + "]";
+        }
+
+
 
 
     }
