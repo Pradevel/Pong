@@ -1,3 +1,0 @@
-C:/Users/Pratyush/CLionProjects/Pong/cmake-build-debug/CMakeFiles/Pong.dir
-C:/Users/Pratyush/CLionProjects/Pong/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/Pratyush/CLionProjects/Pong/cmake-build-debug/CMakeFiles/rebuild_cache.dir
